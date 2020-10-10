@@ -1,0 +1,47 @@
+{
+  "name": "anzii-cli",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "lint": "eslint .",
+    "start": "cross-env NODE_ENV=production node index",
+    "start:dev": "concurrently --kill-others \"npm run build:dev\" \"cross-env NODE_ENV=production nodemon index \" ",
+    "start:dev:nodemon": "nodemon index",
+    "build": "cross-env NODE_ENV=production webpack",
+    "build:dev": "webpack --mode development --watch",
+    "postinstall": "patch-package",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "anzii": "^2.0.8"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.2.3",
+    "@babel/core": "^7.0.0",
+    "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
+    "@babel/plugin-transform-strict-mode": "^7.10.4",
+    "@babel/polyfill": "^7.7.0",
+    "@babel/preset-env": "^7.3.4",
+    "@babel/register": "^7.4.4",
+    "autoprefixer": "^8.6.5",
+    "babel-loader": "^8.0.6",
+    "babel-plugin-transform-remove-strict-mode": "0.0.2",
+    "babel-plugin-transform-strict-mode": "^6.24.1",
+    "concat": "^1.0.3",
+    "cross-env": "^7.0.2",
+    "eslint": "^7.10.0",
+    "filemanager-webpack-plugin": "^2.0.5",
+    "jest": "^26.4.2",
+    "nodemon-webpack-plugin": "^4.0.8",
+    "npm-run-all": "^4.1.5",
+    "uglifyjs-webpack-plugin": "^2.2.0",
+    "webpack": "^4.44.2",
+    "webpack-cli": "^3.3.12",
+    "webpack-node-externals": "^2.5.2"
+  }
+}
