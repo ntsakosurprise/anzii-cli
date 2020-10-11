@@ -18,20 +18,11 @@ class Interpreter{
     this.figlet = figlet
     this.clear = cleya
     this.inquirer = inquirer
-    this.commands = [{
+    this.commands = {
     	  
-    	  command: "scaffold-app",
-    	  alias: 'create-anzii-app',
-    	  arguments: {
-    	  	
-    	  	 cli: {
-    	  	 	 options: ["git"]
-    	  	 	
-    	  	 }
-    	  	
-    	  }
- 
-    }] 
+    	  ["create-anzii-app"]: "create-anzii-app",
+    	 
+    }
     
    
      this.init = methods.init
@@ -41,6 +32,10 @@ class Interpreter{
      this.getFeedback = methods.getFeedback 
      this.prompt = methods.prompt 
      this.outPut = methods.outPut 
+     this.showAvailableCommands = methods.showAvailableCommands 
+     this.createAnziiAppCommand = methods.createAnziiAppCommand 
+     this.helpCommand = methods.helpComand 
+     this.versionCommand = methods.versionCommand
 
      
 
