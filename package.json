@@ -21,6 +21,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@octokit/auth-basic": "^1.4.6",
     "@octokit/rest": "^18.0.6",
     "anzii": "^2.0.8",
     "arg": "^4.1.3",

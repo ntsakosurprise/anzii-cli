@@ -41,6 +41,8 @@ methods.handleInterpreterCliInput = function(data){
 		  '--git': Boolean,
 		  '--yes': Boolean, 
 		  '--install': Boolean, 
+		  '--private': Boolean, 
+		  '--public': Boolean, 
 		  '-c': '--cli',
 		  '-w': '--web',
 		  '-r': '--remote',
@@ -66,46 +68,76 @@ methods.handleInterpreterCliInput = function(data){
 	
 	// }
 
-	console.log('THE COMMANDS INTERPRETER')
-	console.log(commands)
-	console.log(commands._[0]) 
+	// console.log('THE COMMANDS INTERPRETER')
+	// console.log(commands)
+	// console.log(commands._)
+	// console.log(commands._.length)
+	// console.log(commands._[0]) 
+	// console.log(commands._.length > 0 && commands._[0] !== 'cli') 
+	// console.log(commands._.length > 0) 
+	// console.log(commands._[0] !== 'cli')
 
 	if(commands._.length > 0 && commands._[0] !== 'cli'){
-
-
+  
+		console.log('THE COMMANDS ARE SUPPLIED') 
+		let simpCommands = commands._
+		
+		
         if(Object.keys(commands).length <= 1) {
 
+			let skip = false
+			if(simpCommands[0] === 'create-anzii-app' && simpCommands.length > 2) skip = true 
 
-			let com = commands._[0] 
+			let com = simpCommands[0] 
 			if(com === '--help' || com === '-h') com = 'help'
 			if(com == '--version' || com === '-v') com = 'version'
 			if(com === 'create-anzii-app'){ com = 'createAnziiAppCommand'}
-			else{com = `${com}Command`}
+			else{com = `${com}Command`} 
 
-			if(self[com]){
 
-				return self[com]() 
-				
+			if(!skip){
 
-			}else{
+				if(self[com]){
 
-				process.exit(1)
+					return self[com]() 
+					
+
+				}else{
+
+					process.exit(1)
+				}
+
 			}
 
 		}
-
-
-		for(let cmd =0; cmd < commands._.length; ++cmd){
+          
+   
+		for(let cmd =0; cmd < simpCommands.length; ++cmd){
 
 			if(contains(self.commands,cmd)){
 
-				if(self[cmd]) self[cmd]() 
+				if(self[simpCommands[cmd]]) self[simpCommands[cmd]]() 
 				stopFurtherExecution = true
 				break;
+
 			}else{
 
-				console.log('EMMITTING TO SCAFFOLD')
-				self.emit({type: 'create-anzii-app',data: commands}) 
+				
+				let newOptions = {...commands} 
+				newOptions.commands = simpCommands
+				delete newOptions._ 
+				let i = newOptions.commands.indexOf('cli') 
+				if(i > 0) newOptions.commands.splice(i,1) 
+	
+				console.log(
+					chalk.yellow(
+					  figlet.textSync('Welcome to ANZII-CLI', { horizontalLayout: 'full' })
+					)
+				  );
+
+				
+
+				self.emit({type: simpCommands[cmd],data: {commands: newOptions,callback: self.getFeedback.bind(self)}}) 
 				break
 			}
 
@@ -113,44 +145,45 @@ methods.handleInterpreterCliInput = function(data){
 		
 	}else{
 
+		console.log('THE LENGTH IS')
 		return self.showAvailableCommands()
 
 	}
 	
 	if(stopFurtherExecution) return
-	let message = [  { 
+	// let message = [  { 
     
-		name: 'apptype', 
-		type: 'list', 
-		message: 'What type of anzii app would you like to create?', 
-		choices: ['backend/api/web','cli']
+	// 	name: 'apptype', 
+	// 	type: 'list', 
+	// 	message: 'What type of anzii app would you like to create?', 
+	// 	choices: ['backend/api/web','cli']
 	 
 	 
-		 }
-		]
+	// 	 }
+	// 	]
 
-	console.log(
-		chalk.yellow(
-		  figlet.textSync('Welcome to ANZII-CLI', { horizontalLayout: 'full' })
-		)
-	  );
+	// console.log(
+	// 	chalk.yellow(
+	// 	  figlet.textSync('Welcome to ANZII-CLI', { horizontalLayout: 'full' })
+	// 	)
+	//   );
 	
-	  self.prompt({message})
-	  .then((input)=>{
+	//   self.prompt({message})
+	//   .then((input)=>{
 
-		console.log(input)
-		console.log(chalk.green(
-			'Question successfully answered'
-		  )) 
+	// 	console.log(input)
+	// 	console.log(chalk.green(
+	// 		'Question successfully answered'
+	// 	  )) 
 
 
-	  })
-	  .catch((e)=>{
+	//   })
+	//   .catch((e)=>{
 
-		console.log(chalk.red('An error occured prompting for input')); 
-		process.exit(1)
+	// 	console.log(chalk.red('An error occured prompting for input')); 
+	// 	process.exit(1)
 
-	  })
+	//   })
 
 	  
 	 
@@ -164,8 +197,22 @@ methods.handleInterpreterCliInput = function(data){
 methods.handlePromptUser = function(data){
  
 	const self = this  
-	const {callback} = data 
-	self.prompt(message) 
+	
+	// console.log('DATA IN HANDLE PROMPT')
+	// console.log(data)
+	const {callback,query} = data 
+
+	self.prompt({message: query}) 
+	.then((answers)=>{
+
+		callback(answers)
+
+	})
+	.catch((e)=>{
+
+		callback(e)
+
+	})
 	
 
 } 
@@ -197,12 +244,13 @@ methods.getFeedback = function(data){
  
 	const self = this 
 	let {message} = data 
+
+	// if(typeof message === 'object')
 	self.outPut(message)
 } 
 
 methods.prompt = function(data){
  
-
 
  return	new Promise((resolve,reject)=>{
 
@@ -214,15 +262,15 @@ methods.prompt = function(data){
 		// input = await inquirer.prompt(message) 
 		// return input
 		
-		return inquirer.prompt(message) 
-			.then((input)=>{
+		inquirer.prompt(message) 
+		.then((input)=>{
 				
 				resolve(input)
-			}) 
-			.catch((e)=>{
-				
-				reject(e)
-			})
+		}) 
+		.catch((e)=>{
+			
+			reject(e)
+		})
 	
 
 	})
@@ -232,16 +280,15 @@ methods.prompt = function(data){
 } 
 
 
-methods.outPut = function(data){
+methods.outPut = function(message){
  
 	const self = this 
 	const chalk = self.chalk 
 	const figlet = self.figlet 
 
+	if(typeof message === 'object') return console.log(message)
 	console.log(chalk.yellow(
-	
-	 figlet.textSync("Anzii",{horizontal: "full"})
-	
+	  message
 	))
 } 
 
@@ -268,12 +315,12 @@ methods.helpComand = function(){
 	let help = `
 
 	${chalk.greenBright('help <options>')}
-	  ${chalk.cyan.bold('-c | --cli')} ................ Creates anzii cli app
-	  ${chalk.cyan.bold('-w | --web')} ............ Creates anzii app suitable for building web pages, apis, and any backend
-	  ${chalk.cyan.bold('-r | --remote')} ............... Creates a remote repo and initial commit for you anzii app 
+	  ${chalk.cyan.bold('-c | --cli')} ................... Creates anzii cli app
+	  ${chalk.cyan.bold('-w | --web')} ................... Creates anzii app suitable for building web pages, apis, and any backend
+	  ${chalk.cyan.bold('-r | --remote')} ................ Creates a remote repo and initial commit for you anzii app 
 	  ${chalk.cyan.bold('-help | --help')} ............... Shows help menu for create-anzii-app command
-	  ${chalk.cyan.bold('-g | --git')} ............... Initializes git for you anzii app
-	  ${chalk.cyan.bold('-y | --yes')} ............... Creates anzii app with default settings
+	  ${chalk.cyan.bold('-g | --git')} ................... Initializes git for you anzii app
+	  ${chalk.cyan.bold('-y | --yes')} ................... Creates anzii app with default settings
 	`
 
 	console.log(help)
@@ -308,12 +355,13 @@ methods.createAnziiAppCommand = function(){
 	let help = `
 
 	${chalk.greenBright('create-anzii-app <options>')}
-	  ${chalk.cyan.bold('-c | --cli')} ................ Creates anzii app suitable for building cli apps
-	  ${chalk.cyan.bold('-w | --web')} ............ Creates anzii app suitable for building web pages, apis, and any backend
-	  ${chalk.cyan.bold('-r | --remote')} ............... Creates a remote repo and an initial commit for your anzii app 
-	  ${chalk.cyan.bold('-h | --help')} ............... Shows help menu for create-anzii-app command
-	  ${chalk.cyan.bold('-g | --git')} ............... Initializes git for your anzii app
-	  ${chalk.cyan.bold('-y | --yes')} ............... Creates anzii app with default settings
+
+	  ${chalk.cyan.bold('-c | --cli')}    ................... Creates anzii app suitable for building cli apps
+	  ${chalk.cyan.bold('-w | --web')}    ................... Creates anzii app suitable for building web pages, apis, and any backend
+	  ${chalk.cyan.bold('-r | --remote')} ................... Creates a remote repo and an initial commit for your anzii app 
+	  ${chalk.cyan.bold('-h | --help')}   ................... Shows help menu for create-anzii-app command
+	  ${chalk.cyan.bold('-g | --git')}    ................... Initializes git for your anzii app
+	  ${chalk.cyan.bold('-y | --yes')}    ................... Creates anzii app with default settings
 	`
 
 	console.log(help)
