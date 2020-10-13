@@ -22,32 +22,133 @@ methods.handleScaffoldApp = function(data){
 
  
 	const self = this 
+	const pao = self.pao 
+	const getWorkingFolder =  pao.pa_getWorkingFolder 
+	const createFolderContent = pao.pa_createFolderContent 
+	const makeFolderSync = pao.pa_makeFolderSync 
+	const getRootDir = pao.pa_getRootDir 
 	self.callback = data.callback 
 	let commandsLen = Object.keys(data.commands).length 
+	let repoName = ''
 
 	if(commandsLen === 1){
 
+		repoName = data.commands.commands[1]
 		self.startQuestionnaire({general: ['type','description','git','init','repotype','remote']})
 		.then((answers)=>{
 
 			console.log('Questionaire answers')
 			// console.log(answers) 
-			if(answers.remote && answers.remote.trim() === 'yest'){
+			if(answers.remote && answers.remote.trim() === 'yes'){
 
-				self.startQuestionnaire({remote: ['provider','username','password']})
-				.then((credentials)=>{
+				self.getStoredUserToken()
+				.then((token)=>{
 
-					// console.log(credentials)
-					return self.callback({message:{...answers,...credentials}})
+					if(token){
 
+						self.authenticateUser(token)
+						.then((authenticated)=>{
+
+							console.log('THE WEB PLUGIN')
+							console.log(authenticated) 
+
+							let options ={
+
+								name: repoName,
+								private: answers.private ? true : false,
+								description: answers.description.trim() !== '' 
+																				? answers.description 
+																				: `This is a ${repoName} app`
+							}
+
+							self.createRemoteRepo(options)
+							.then((repoUrl)=>{
+
+								console.log('THE REMOTE REPO URL')
+								console.log(repoUrl)
+								self.callback({message: "Finished creating remote url"})
+
+							})
+							.catch((e)=>{
+
+								return reject(e)
+
+							})
+
+
+
+						})
+						.catch((e)=>{
+
+							self.callback({message: 'There was an error authenticating users'}) 
+							// process.exit(1)
+						})
+
+					}else{
+
+
+
+						self.startQuestionnaire({remote: ['provider','username','password']})
+						.then((credentials)=>{
+
+							 console.log('THE USER CREDENTIALS')
+							 console.log(credentials) 
+							 return
+							self.getRemoteUserToken(credentials)
+							.then((token)=>{
+
+							})
+							.catch((e)=>{
+
+							})
+
+							return self.callback({message:{...answers,...credentials}})
+
+						})
+						.catch((e)=>{
+
+							return self.callback(e)
+						})
+					}
 				})
 				.catch((e)=>{
 
-					return self.callback(e)
+					 return self.callback({message: 'There was an error getting stored user token'})
 				})
+
+				
 			}else{
 
-				return self.callback({message:answers})
+				
+			
+				//console.log(loadFile('./.config.js'))
+
+				// console.log('Templates path') 
+				// console.log(`${getRootDir()}/templates/web`)
+				
+				let templatePath = `${getRootDir()}/templates/web` 
+				let dir = {templatePath,folderName: data.commands.commands[1]} 
+				let newFolder = `${getWorkingFolder()}/${dir.folderName}`
+				let tasks = [
+					{ title: 'Create project folder', task: () => self.makeFolder(newFolder)},
+					{ title: 'Copy project files', task: () => self.pao.pa_createFolderContent(dir.templatePath,dir.folderName)},
+					{ title: 'Initialize git repo', task: () => self.gitInit(newFolder)},
+				]
+				//console.log(templatePath) 
+			
+				self.runTasks(tasks,dir) 
+				.then((completedTasks)=>{
+
+					// console.log('%s Project ready', chalk.green.bold('DONE'));
+					return self.callback({message:'Project Ready!'})
+
+				})
+				.catch((e)=>{
+					return self.callback({message:e})
+				})
+				// createFolderContent(templatePath,data.commands.commands[1])
+
+				
 			}
 			
 
@@ -298,43 +399,45 @@ methods.getTwoFactorAuthentication = function(data){
 methods.getRemoteUserToken = function(data){
 
 
-//   return new Promise((resolve,reject)=>{
+  return new Promise((resolve,reject)=>{
 
-// 	const self = this 
-// 	const {createBasicAuth} = self.createBasicAuth 
-// 	const {username,password} = data 
-	
-	
-//     const auth = createBasicAuth({ username, 
-//     password, 
-//     async on2Fa() {
-    
-//       //status.stop();
-//        const res = await self.getTwoFactorAuthenticationCode();   
-//        //status.start(); 
-//        return res.twoFactorAuthenticationCode;
-    
-//     },
-//     token: { scopes: ['user', 'public_repo', 'repo', 'repo:status'],
-//     note: 'ginit, the command-line tool for initalizing Git repos' } }); 
-    
-//     auth() 
-//     .then((res)=>{
-    	
-//     	 if(!res.token) return reject(new Error('Token was not found')) 
-    	  
-//     	  self.storeUserConfigs({key:'access.token',value: res.token}) 
-//     	  resolve(res.token)
-//     })
-//     catch((e)=>{
-//     	  reject(e)
-    	
-//     })
+		const self = this 
+
+		const {createBasicAuth} = self.createBasicAuth 
+		const {username,password} = data 
+		
+		
+		const auth = createBasicAuth({ username, password, 
+		// async on2Fa() {
+		
+		// //status.stop();
+		// const res = await self.getTwoFactorAuthenticationCode();   
+		// //status.start(); 
+		// return res.twoFactorAuthenticationCode;
+		
+		// },
+			token: { scopes: ['user', 'public_repo', 'repo', 'repo:status'],
+			note: 'ginit: a way to create remote rempos using an api' } 
+	  	}); 
+		
+		auth() 
+		.then((res)=>{
+			
+			if(!res.token) return reject(new Error('Token was not found')) 
+			
+			self.storeUserConfigs({key:'access.token',value: res.token}) 
+			return resolve(res.token)
+		})
+		.catch((e)=>{
+
+			return reject(e)
+			
+		})
 
 	
 	
 	
-// 	})
+	})
  
 
 } 
@@ -344,12 +447,19 @@ methods.getRemoteUserToken = function(data){
 
 
 
-methods.authenticateUser = function(data){
+methods.authenticateUser = function(token){
 
 
   return new Promise((resolve,reject)=>{
 
 	const self = this 
+	const {Octokit} = self
+	
+	octokit = new Octokit({
+		auth: token
+	  });
+
+	  resolve(true)
 	
 	
 	
@@ -363,16 +473,15 @@ methods.authenticateUser = function(data){
 methods.storeUserConfigs = function(data){
 
 
-  return new Promise((resolve,reject)=>{
+
 
 	const self = this 
-	const config = self.config 
+	const config = new self.Configstore 
 	const {key,value} = data
-	
 	config.set(key,value)
 	
 	
-	})
+
  
 
 } 
@@ -402,29 +511,44 @@ methods.getScaffoldOptions = function(data){
 
 
 
-methods.createRemoteRepo = function(data){
+methods.createRemoteRepo = function(options){
 
 
-//   return new Promise((resolve,reject)=>{
+  return new Promise((resolve,reject)=>{
 
-// 	const self = this 
-// 	const repotype = type === "private" ? "private" || "public"
+	const self = this 
+	const {Octokit} = self
+	const octokit = new Octokit();
+
+
+	octokit.repos.createForAuthenticatedUser(options)
+	.then((response)=>{
+
+		return resolve(response.data.ssh_url)
+	})
+	.catch((e)=>{
+
+		return reject(e)
+	})
+
+
+	// const repotype = type === "private" ? "private" || "public"
 	
 	
-// 	const  { name, description,  } = data 
-// 	const repo = {name,description,[repotype]:} 
+	// const  { name, description,  } = data 
+	// const repo = {name,description,[repotype]:} 
 	
-// 	.repos.createForAuthenticatedUser(data)
-// 	.then((response)=>{
-// 		retun response.data.ssh_url
-// 	})
-// 	.catch((e)=>{
+	// .repos.createForAuthenticatedUser(data)
+	// .then((response)=>{
+	// 	retun response.data.ssh_url
+	// })
+	// .catch((e)=>{
 		
-// 	}); 
+	// }); 
 	
 	
 	
-// 	})
+	 })
  
 
 } 
@@ -478,24 +602,40 @@ methods.requestUserInput = function(questions){
 	
 	 return resolve(inquire)
 	 
-	
-	
+
 	})
  
 
 } 
 
-methods.gitInit = function(data){
+methods.gitInit = function(initFolder){
 
+	const self = this 
+	const git = self.simpleGit(initFolder) 
+    // git.cwd(initFolder)
+	git.init()
+	.add('./*')
+	.commit('Add initial commit to this repo')
+	.catch((e)=>{
 
-//   return new Promise((resolve,reject)=>{
+		console.log('GIT INIT ERROR')
+		console.log(e)
+	})
 
-// 	const self = this 
-	
-	     
-// 	const result = await execa('git', ['init'], { cwd: options.targetDirectory, }); if (result.failed) { return Promise.reject(new Error('Failed to initialize git')); } return;
-// 	})
- 
+	// git.init()
+    //   .then(git.add('.gitignore'))
+    //   .then(git.add('./*'))
+    //   .then(git.commit('Initial commit'))
+    //   .then(git.addRemote('origin', url))
+    //   .then(git.push('origin', 'master'));
+
+	// const result = await execa('git', ['init'], {
+	// 	cwd: initFolder
+	//   });
+	//   if (result.failed) {
+	// 	return Promise.reject(new Error('Failed to initialize git'));
+	//   }
+	//   return;
 
 } 
 
@@ -508,7 +648,7 @@ methods.getScaffoldTemplate= function(type="web"){
  return new Promise((resolve,reject)=>{ 
  
  
- 		  const self = this 
+ 	  const self = this 
       const pao = self.pao 
     	
     	 
@@ -603,9 +743,28 @@ methods.handleTask = function(data){
 } 
 
 
-methods.runTasks = function(){
+methods.makeFolder = function(filepath){
+ 
+	const self = this 
+	const pao = self.pao 
+	const getWorkingFolder =  pao.pa_getWorkingFolder 
+	const createFolderContent = pao.pa_createFolderContent 
+	const makeFolderSync = pao.pa_makeFolderSync 
+	const getRootDir = pao.pa_getRootDir 
+
+	return makeFolderSync(filepath)
+} 
+
+
+methods.runTasks = async function(toRun,dir){
 	
-	const tasks = new Listr([ { title: 'Copy project files', task: () => copyTemplateFiles(options), }, { title: 'Initialize git', task: () => initGit(options), enabled: () => options.git, }, { title: 'Install dependencies', task: () => projectInstall({ cwd: options.targetDirectory, }), skip: () => !options.runInstall ? 'Pass --install to automatically install dependencies' : undefined, }, ]);
+	const self = this 
+	const Listr = self.Listr
+
+	const tasks = new Listr(toRun);
+
+	await tasks.run() 
+	return true
 	
 	
 	

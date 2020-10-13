@@ -3,6 +3,7 @@ const methods  = require("./methods")
 
 const execa = require('execa'); 
 const Listr = require('listr'); 
+const simpleGit = require('simple-git')
 const pkgInstall  = require('pkg-install');
 
 const Configstore = require('configstore'); 
@@ -16,7 +17,12 @@ class Scaffold{
   
   constructor(pao){
 
-     this.pao = pao 
+	 this.pao = pao 
+	 this.Listr = Listr 
+	 this.execa = execa 
+	 this.Octokit = Octokit
+	 this.simpleGit = simpleGit 
+	 this.Configstore = Configstore
     //  this.octokit = new Octokit() 
      this.createBasicAuth = createBasicAuth
      this.questions = {
@@ -162,7 +168,16 @@ class Scaffold{
      this.handleScaffoldApp = methods.handleScaffoldApp
 	 this.handleScaffoldCommands = methods.handleScaffoldCommands 
 	 this.startQuestionnaire = methods.startQuestionnaire 
-	 this.getInterpreterFeed = methods.getInterpreterFeed
+	 this.getInterpreterFeed = methods.getInterpreterFeed 
+	 this.createRemoteRepo = methods.createRemoteRepo 
+	 this.authenticateUser = methods.authenticateUser 
+	 this.getStoredUserToken = methods.getStoredUserToken 
+	 this.getRemoteUserToken = methods.getRemoteUserToken 
+	 this.storeUserConfigs = methods.storeUserConfigs
+	 this.makeFolder = methods.makeFolder 
+	 this.gitInit = methods.gitInit 
+	 this.npmInit = methods.npmInit
+	 this.runTasks = methods.runTasks
 	
      
     

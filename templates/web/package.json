@@ -1,7 +1,7 @@
 {
-  "name": "anzii-hello-example",
-  "version": "1.0.1",
-  "description": "An anzii framework plugin that shows how to create anzii plugins",
+  "name": "newapp",
+  "version": "1.0.0",
+  "description": "",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -9,20 +9,8 @@
   "dependencies": {
     "anzii": "^2.0.8"
   },
-  "devDependencies": {
-    "@babel/polyfill": "^7.7.0"
-  },
-  "keywords": [
-    "plugin",
-    "hello",
-    "anzii"
-  ],
-  "author": "Surprise Ntsako",
-  "readmeFilename": "README.md",
-  "files": [
-    "index.js",
-    "README.md",
-    "LICENSE",
-    "package.json"
-  ]
+ 
+ 
+  "readmeFilename": "README.md"
+  
 }

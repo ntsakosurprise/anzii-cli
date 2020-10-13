@@ -1,4 +1,4 @@
-const { configurationErrorTask } = require("simple-git/src/lib/tasks/task")
+
 
 
 let methods = {}
@@ -19,7 +19,11 @@ methods.handleInterpreterCliInput = function(data){
  
 	const self = this  
 	const pao = self.pao
-	const contains = pao.pa_contains
+	const contains = pao.pa_contains 
+	const getWorkingFolder = pao.pa_getWorkingFolder 
+	const loadFile = pao.pa_loadFile 
+	const getMainFileName = pao.pa_getMainFileName 
+	const getRootDir = pao.pa_getRootDir
 	const arg = self.arg 
 	const figlet = self.figlet 
 	const chalk = self.chalk 
@@ -43,6 +47,8 @@ methods.handleInterpreterCliInput = function(data){
 		  '--install': Boolean, 
 		  '--private': Boolean, 
 		  '--public': Boolean, 
+		  '--version': Boolean,
+		  '--help': Boolean,
 		  '-c': '--cli',
 		  '-w': '--web',
 		  '-r': '--remote',
@@ -54,6 +60,14 @@ methods.handleInterpreterCliInput = function(data){
 		
 		argv: pao.PROMPT.slice(2)
 	})
+
+	// console.log('Templates path')
+	// console.log(`${__dirname}`) 
+	// console.log(`${getRootDir()}/templates/web`)
+	// console.log(`${getWorkingFolder()}`)
+	// // console.log(loadFile('./.config.js')) 
+	// console.log(require.main.filename)
+	// return
 
 	
 	// let set = {
@@ -79,7 +93,7 @@ methods.handleInterpreterCliInput = function(data){
 
 	if(commands._.length > 0 && commands._[0] !== 'cli'){
   
-		console.log('THE COMMANDS ARE SUPPLIED') 
+		// console.log('THE COMMANDS ARE SUPPLIED') 
 		let simpCommands = commands._
 		
 		
@@ -331,19 +345,22 @@ methods.helpComand = function(){
 methods.versionCommand = function(){
  
 	const self = this 
+	const pao = self.pao
 	const chalk = self.chalk 
-	let help = `
+	const loadFile = pao.pa_loadFile 
+	console.log(loadFile('./package.json').version) 
+	// let help = `
 
-	${chalk.greenBright('version <options>')}
-	  ${chalk.cyan.bold('-c | --cli')} ................ Creates anzii cli app
-	  ${chalk.cyan.bold('-w | --web')} ............ Creates anzii app suitable for building web pages, apis, and any backend
-	  ${chalk.cyan.bold('-r | --remote')} ............... Creates a remote repo and initial commit for you anzii app 
-	  ${chalk.cyan.bold('-help | --help')} ............... Shows help menu for create-anzii-app command
-	  ${chalk.cyan.bold('-g | --git')} ............... Initializes git for you anzii app
-	  ${chalk.cyan.bold('-y | --yes')} ............... Creates anzii app with default settings
-	`
+	// ${chalk.greenBright('version <options>')}
+	//   ${chalk.cyan.bold('-c | --cli')} ................ Creates anzii cli app
+	//   ${chalk.cyan.bold('-w | --web')} ............ Creates anzii app suitable for building web pages, apis, and any backend
+	//   ${chalk.cyan.bold('-r | --remote')} ............... Creates a remote repo and initial commit for you anzii app 
+	//   ${chalk.cyan.bold('-help | --help')} ............... Shows help menu for create-anzii-app command
+	//   ${chalk.cyan.bold('-g | --git')} ............... Initializes git for you anzii app
+	//   ${chalk.cyan.bold('-y | --yes')} ............... Creates anzii app with default settings
+	// `
 
-	console.log(help)
+	// console.log(help)
 
 } 
 
