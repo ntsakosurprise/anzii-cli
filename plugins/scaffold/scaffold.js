@@ -8,7 +8,8 @@ const pkgInstall  = require('pkg-install');
 
 const Configstore = require('configstore'); 
 const Octokit = require('@octokit/rest'); 
-const { createBasicAuth } = require("@octokit/auth-basic");
+const { createBasicAuth } = require("@octokit/auth-basic"); 
+var github = require('octonode');
 // const pkg = require('../package.json')
 // const conf = new Configstore(pkg.name);
 
@@ -22,7 +23,8 @@ class Scaffold{
 	 this.execa = execa 
 	 this.Octokit = Octokit
 	 this.simpleGit = simpleGit 
-	 this.Configstore = Configstore
+	 this.Configstore = Configstore 
+	 this.github = github
     //  this.octokit = new Octokit() 
      this.createBasicAuth = createBasicAuth
      this.questions = {
@@ -77,6 +79,21 @@ class Scaffold{
 		
 		
 			}
+		
+		], 
+		account: [ 
+		
+			{ 
+			
+				name: 'account', 
+				type: 'list',
+				key: 'account', 
+				message: 'Which account are u creating this repo for?', 
+				choices: []
+				
+			},
+			
+			
 		
 		], 
 		getTwoFactor: [
@@ -178,6 +195,7 @@ class Scaffold{
 	 this.gitInit = methods.gitInit 
 	 this.npmInit = methods.npmInit
 	 this.runTasks = methods.runTasks
+	 this.startPostAuthenticationTasks = methods.startPostAuthenticationTasks
 	
      
     
