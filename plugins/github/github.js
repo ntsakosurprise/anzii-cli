@@ -25,5 +25,4 @@ class Github{
   
 
 }
-
-export default Github
+module.exports = Github

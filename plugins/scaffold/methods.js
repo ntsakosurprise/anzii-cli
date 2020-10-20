@@ -1,6 +1,7 @@
 
 
 
+
 const methods = {}
 
 methods.init = function(){
@@ -23,11 +24,34 @@ methods.handleScaffoldApp = function(data){
 	const getWorkingFolder =  pao.pa_getWorkingFolder 
 	const createFolderContent = pao.pa_createFolderContent 
 	const makeFolderSync = pao.pa_makeFolderSync 
-	const getRootDir = pao.pa_getRootDir 	
-	// const git = self.simpleGit() 
-	// var github = self.github
-	// const client = github.client('d52e1b732cfdab165ac9322d079b33ea23ba6fe9')
-	self.callback = data.callback 
+	const getRootDir = pao.pa_getRootDir 
+	// const Bitbucket = self.Bitbucket
+	
+	// const clientOptions = {
+	// 	auth: {
+	// 	  username: 'turtrozz',
+	// 	  password: '19900323rose@59',
+	// 	},
+	//   }
+	   
+	//   const bitbucket = new Bitbucket(clientOptions) 
+
+	//  bitbucket.repositories
+	// .listGlobal({owner: 'turtrozz'})
+	// .then(({ data }) => {
+		
+	// 	console.log('rEPOS HAVE BEEN FOUND') 
+	// 	// console.log(data)
+	// 	console.log(data.values[0])})
+	// .catch((err) =>{
+	// 	console.log('THE ERROR FETCHING REPOS')
+	// 	console.log(err)
+	// })
+	// // const git = self.simpleGit() 
+	// // var github = self.github
+	// // const client = github.client('d52e1b732cfdab165ac9322d079b33ea23ba6fe9')
+	// return
+	 self.callback = data.callback 
 
 	// client.repo({
 	// 	name: "anzii-cli-tes"
@@ -226,27 +250,122 @@ methods.handleScaffoldApp = function(data){
 			if(answers.remote && answers.remote.toLowerCase().trim() === 'yes'){
 
 
-				self.getStoredUserToken()
-				.then((token)=>{
+				self.startQuestionnaire({remote: ['provider']})
+				.then((versionProvider)=>{
 
-					// console.log('THE TOKEN RETURNED FROM GETSTOREDuSERTOKEN')
-					// console.log(token) 
-					if(!token){
+					self.getStoredUserToken({version: versionProvider.provider})
+					.then((token)=>{
 
-						self.startQuestionnaire({remote: ['provider','username','password']})
-						.then((credentials)=>{
+						console.log('THE TOKEN RETURNED FROM GETSTOREDuSERTOKEN')
+						console.log(token) 
 
-							 console.log('THE USER CREDENTIALS')
-							 console.log(credentials) 
-			
-							self.getRemoteUserToken(credentials)
-							.then((token)=>{
+				
+						if(token.isNotFound){
 
+							self.startQuestionnaire({remote: ['username','password']})
+							.then((credentials)=>{
+
+								console.log('THE USER CREDENTIALS')
+								console.log(credentials) 
+				
+								self.getRemoteUserToken({...credentials,remote: versionProvider.provider})
+								.then((token)=>{
+
+									let templatePath = `${getRootDir()}/templates/web` 
+									let dir = {templatePath,folderName: data.commands.commands[1]} 
+									let newFolder = `${getWorkingFolder()}/${dir.folderName}`
+								
+									self.startPostAuthenticationTasks(token.token,answers,repoName)
+									.then((repoUrl)=>{
+
+										let tasks = [
+											{ title: 'Create remote repository', task: () => ''},
+											{ title: 'Create project folder', task: () => self.makeFolder(newFolder)},
+											{ title: 'Copy project files', task: () => self.pao.pa_createFolderContent(dir.templatePath,dir.folderName)},
+											{ title: 'Initialize git repo', task: () => self.gitInit(newFolder,repoUrl)},
+										]
+		
+										self.runTasks(tasks,dir) 
+										.then((completedTasks)=>{
+		
+											// console.log('%s Project ready', chalk.green.bold('DONE'));
+											return self.callback({message:'Project Ready!'})
+		
+										})
+										.catch((e)=>{
+											return self.callback({message:e})
+										})
+
+									})
+
+								})
+								.catch((e)=>{
+									// return self.callback({message:{...answers,...credentials}})
+
+									return self.callback(e)
+
+								})
+
+								
+
+							})
+							.catch((e)=>{
+
+								return self.callback(e)
+							})
+
+
+						}else if(token.token){
+
+								// console.log('THE TOKEN IS SET')
+								// console.log(token.token)
 								let templatePath = `${getRootDir()}/templates/web` 
 								let dir = {templatePath,folderName: data.commands.commands[1]} 
 								let newFolder = `${getWorkingFolder()}/${dir.folderName}`
-							
+
 								self.startPostAuthenticationTasks(token.token,answers,repoName)
+								.then((repoUrl)=>{
+
+									let tasks = [
+										{ title: 'Create remote repository', task: () => ''},
+										{ title: 'Create project folder', task: () => self.makeFolder(newFolder)},
+										{ title: 'Copy project files', task: () => self.pao.pa_createFolderContent(dir.templatePath,dir.folderName)},
+										{ title: 'Initialize git repo', task: async () => await self.gitInit(newFolder,repoUrl)},
+									]
+
+									self.runTasks(tasks,dir) 
+									.then((completedTasks)=>{
+
+										// console.log('%s Project ready', chalk.green.bold('DONE'));
+										return self.callback({message:'Project Ready!'})
+
+									})
+									.catch((e)=>{
+										return self.callback({message:e})
+									})
+
+								})
+								.catch((e)=>{
+
+									// console.log('ERROR STARTING POST AUTH')
+									console.log(e)
+								})
+						}else{
+
+							// console.log('IT GETS HERE BECAUSE TOKEN SHOULD BE FETCHED FROM REMOTE')
+		
+							self.getRemoteUserToken({...token.creds,remote: versionProvider.provider})
+							.then((remoteToken)=>{
+
+								// console.log('FOUND REMOTE TOKEN')
+								// console.log(remoteToken) 
+								
+								let templatePath = `${getRootDir()}/templates/web` 
+								let dir = {templatePath,folderName: data.commands.commands[1]} 
+								let newFolder = `${getWorkingFolder()}/${dir.folderName}`
+
+								let mergeAnswers = {...token.creds,description: answers.description}
+								self.startPostAuthenticationTasks(remoteToken.token,mergeAnswers,repoName)
 								.then((repoUrl)=>{
 
 									let tasks = [
@@ -255,122 +374,50 @@ methods.handleScaffoldApp = function(data){
 										{ title: 'Copy project files', task: () => self.pao.pa_createFolderContent(dir.templatePath,dir.folderName)},
 										{ title: 'Initialize git repo', task: () => self.gitInit(newFolder,repoUrl)},
 									]
-	
+
 									self.runTasks(tasks,dir) 
 									.then((completedTasks)=>{
-	
+
 										// console.log('%s Project ready', chalk.green.bold('DONE'));
 										return self.callback({message:'Project Ready!'})
-	
+
 									})
 									.catch((e)=>{
+										console.log(e)
 										return self.callback({message:e})
 									})
 
 								})
-
-							})
-							.catch((e)=>{
-								// return self.callback({message:{...answers,...credentials}})
-
-								return self.callback(e)
-
-							})
-
-							
-
-						})
-						.catch((e)=>{
-
-							return self.callback(e)
-						})
-
-
-					}else if(token.token){
-
-							// console.log('THE TOKEN IS SET')
-							// console.log(token.token)
-							let templatePath = `${getRootDir()}/templates/web` 
-							let dir = {templatePath,folderName: data.commands.commands[1]} 
-							let newFolder = `${getWorkingFolder()}/${dir.folderName}`
-
-							self.startPostAuthenticationTasks(token.token,answers,repoName)
-							.then((repoUrl)=>{
-
-								let tasks = [
-									{ title: 'Create remote repository', task: () => ''},
-									{ title: 'Create project folder', task: () => self.makeFolder(newFolder)},
-									{ title: 'Copy project files', task: () => self.pao.pa_createFolderContent(dir.templatePath,dir.folderName)},
-									{ title: 'Initialize git repo', task: () => self.gitInit(newFolder,repoUrl)},
-								]
-
-								self.runTasks(tasks,dir) 
-								.then((completedTasks)=>{
-
-									// console.log('%s Project ready', chalk.green.bold('DONE'));
-									return self.callback({message:'Project Ready!'})
-
-								})
 								.catch((e)=>{
-									return self.callback({message:e})
-								})
 
+									console.log(e) 
+									return self.callback({message: 'There was an error running required tasks'})
+								})
+								
 							})
 							.catch((e)=>{
-
-								// console.log('ERROR STARTING POST AUTH')
 								console.log(e)
+								return self.callback({message: 'There was an error getting remote token'})
 							})
-					}else{
-	
-						self.getRemoteUserToken(token.creds)
-						.then((remoteToken)=>{
 
-							let templatePath = `${getRootDir()}/templates/web` 
-							let dir = {templatePath,folderName: data.commands.commands[1]} 
-							let newFolder = `${getWorkingFolder()}/${dir.folderName}`
+								
+						}
+					})
+					.catch((e)=>{
 
-							let mergeAnswers = {...token.creds,description: answers.description}
-							self.startPostAuthenticationTasks(remoteToken.token,mergeAnswers,repoName)
-							.then((repoUrl)=>{
+						console.log('The error in get user stored token')
+						console.log(e)
+						return self.callback({message: 'There was an error getting stored user token'})
+					})
 
-								let tasks = [
-									{ title: 'Create remote repository', task: () => ''},
-									{ title: 'Create project folder', task: () => self.makeFolder(newFolder)},
-									{ title: 'Copy project files', task: () => self.pao.pa_createFolderContent(dir.templatePath,dir.folderName)},
-									{ title: 'Initialize git repo', task: () => self.gitInit(newFolder,repoUrl)},
-								]
-
-								self.runTasks(tasks,dir) 
-								.then((completedTasks)=>{
-
-									// console.log('%s Project ready', chalk.green.bold('DONE'));
-									return self.callback({message:'Project Ready!'})
-
-								})
-								.catch((e)=>{
-									return self.callback({message:e})
-								})
-
-							})
-							.catch((e)=>{
-
-
-							})
-							
-						})
-						.catch((e)=>{
-							return self.callback({message: 'There was an error getting remote token'})
-						})
-
-							
-					}
 				})
 				.catch((e)=>{
 
-					 console.log(e)
-					 return self.callback({message: 'There was an error getting stored user token'})
+					console.log(e)
+					return self.callback({message: 'There was an error starting provider questionnaire'})
+
 				})
+				
 
 				
 			}else{
@@ -538,84 +585,101 @@ methods.isExistingDir = function(dir){
 } 
 
 
-methods.getStoredUserToken = function(){
+methods.getStoredUserToken = function(vendor){
 
 
   return new Promise((resolve,reject)=>{
 
 	const self = this 
-	const pao = self.pao
-	const loadFile = pao.pa_loadFile
-	const config = new self.Configstore(loadFile('./package.json').name) 
-	// console.log(config)
-	// console.log(loadFile('./package.json').name)
-	// console.log(config.get)
-	// console.log(config.all)
-	// console.log(config.get('iiprodakts'))
-	let allStoredKeys = config.all
+	const pao = self.pao 
+		if(vendor.version !== 'bitbucket' || vendor.version !== 'github'){
 
-	if(allStoredKeys){
+			self.emit({
+				type: 'get-from-config',
+				data: {
+					callback: self.getStoredUserTokenFeedback.bind(this,resolve,reject),
+					key: vendor.version.toLowerCase()}})
+		}else{
 
-		let storedKeys = Object.keys(allStoredKeys)
+			return resolve(false)
+		}
+	})
+ 
 
-		// console.log('THE STORED KEYS')
-		// console.log(storedKeys)
-		self.questions.account[0].choices = [...storedKeys]
-		self.questions.account[0].choices.push('Another account')
-		// console.log(self.questions.account[0].choices)
+} 
 
-		self.startQuestionnaire({account: ['account']})
-		.then((confirmAnswer)=>{
-			 
-			//  console.log('THE CONFIRM ANSWER')
-			//  console.log(confirmAnswer.account.toLowerCase().trim()  === 'another account' )
-			 if(confirmAnswer.account.toLowerCase().trim() === 'another account'){
+methods.getStoredUserTokenFeedback = function(resolve,reject,result){
+	
+	const self = this 
+	
+	    console.log('THE CONFIG RESULT')
+	    console.log(result)
 
-				self.startQuestionnaire({remote: ['username','password']})
-				.then((answers)=>{
+		if(!result){
 
-					console.log('Answers in getStoredConfig')
-					console.log(answers)
-					return resolve({creds: answers})
+			console.log('Configstore could not complete')
+			return reject(new Error('Configstore could not complete'))
+
+		 }else{
+	
+			if(result.isFound){
+
+				let found = result.found 
+				let storedKeys = Object.keys(found) 
+				self.questions.account[0].choices = [...storedKeys]
+
+				self.questions.account[0].choices.push('Another account')
+				// console.log(self.questions.account[0].choices)
+
+				self.startQuestionnaire({account: ['account']})
+				.then((confirmAnswer)=>{
+					
+					//  console.log('THE CONFIRM ANSWER')
+					//  console.log(confirmAnswer.account.toLowerCase().trim()  === 'another account' )
+					if(confirmAnswer.account.toLowerCase().trim() === 'another account'){
+
+						self.startQuestionnaire({remote: ['username','password']})
+						.then((answers)=>{
+
+							console.log('Answers in getStoredConfig')
+							console.log(answers)
+							return resolve({creds: answers})
+
+						})
+						.catch((e)=>{
+
+							return reject(e)
+						})
+					}else{
+
+						return resolve(found[confirmAnswer.account])
+
+					}
 
 				})
 				.catch((e)=>{
 
 					return reject(e)
 				})
-			 }else{
 
-			
 
-					 return resolve(allStoredKeys[confirmAnswer.account])
 
+			}else{
+
+				console.log('THE CONFIG HAS NOT BEEN FOUND')
+				return resolve({isNotFound: true})
 				
-			 }
+			}
+			
+			
+		 }
 
-		})
-		.catch((e)=>{
-
-			return reject(e)
-		})
-		// resolve(allStoredKeys) 
-
-
-	}else{
-
-		return resolve(false)
-	}
-	
-	//  if(!key) return reject(new Error('No token has been provided')) 
-	//  return resolve(config.get(key))
-	 
+		 
 	
 	
-	})
- 
-
-} 
-
-
+	
+	
+}
 
 
 
@@ -673,87 +737,94 @@ methods.getRemoteUserToken = function(data){
 
 		const self = this 
 		const github = self.github 
-		const {username,password} = data 
+		const {username,password,remote} = data  
 		const scopes = {
 			'scopes': ['user', 'repo', 'gist'],
 			'note': 'Anzii-cli remote repository creation'
 		  };
 
-
-		  github.auth.config({
-
-			 username,password
-
-			}).login(scopes, function (err, id, token, headers) {
-			
-				// console.log('THE AUTHENTICATION SCOPES')
-				if(err){
-
-					console.log('Git hub login error')
-					reject(err)
-
-				}else{
-					
-					let accessToken = {token: token,tokenID: id, userID: username}
-					
-					self.storeUserConfigs({key:username,value:accessToken }) 
-					return resolve(accessToken)
-
-				}
-				// console.log(id, token); 
-				// client.me().repo({
-				// 	"name": "anzii-cli-test-app",
-				// 	"private": false,
-				// 	"description": "This is a test app created via anzii-cli"},
-				// 	(err,res)=>{
-				// 	console.log('THE INFO ABOUT THE USER')
-				// 	console.log(err)
-				// 	console.log(res)
-				// })
-			
-			
-		}); 
-
-		// const createBasicAuth = self.createBasicAuth 
-		// const {username,password} = data 
-		
-		// console.log('THE AUTHENTICATION IS ABOUT TO KICKIN')
-		
-		// const auth = createBasicAuth({ type: 'token', 
-		// // async on2Fa() {
-		
-		// // //status.stop();
-		// // const res = await self.getTwoFactorAuthenticationCode();   
-		// // //status.start(); 
-		// // return res.twoFactorAuthenticationCode;
-		
-		// // },
-		// 	token: { scopes: ['user', 'public_repo', 'repo', 'repo:status'],
-		// 	note: 'ginit: a way to create remote rempos using an api' } 
-		//   }); 
+		  console.log('THE REMOTE')
+		  console.log(data) 
 		  
-	
-		// auth() 
-		// .then((res)=>{
-			
-		// 	if(!res.token) return reject(new Error('Token was not found')) 
-			
-		// 	self.storeUserConfigs({key:'access.token',value: res.token}) 
-		// 	return resolve(res.token)
-		// })
-		// .catch((e)=>{
+		
 
-		// 	return reject(e)
-			
-		// })
+		if(remote.toLowerCase() === 'github'){
 
-	
-	
-	
+			self.emit({
+				type: 'get-gitauth-token',
+				data: {
+					callback: self.getRemoteUserTokenFeedback.bind(this,resolve,reject,remote.toLowerCase()),
+					getCreds: {username,password,scopes}}})
+
+
+		}else if(remote.toLowerCase() === 'bitbucket'){
+
+			self.emit({
+				type: 'get-bitauth-token',
+				data: {
+					callback: self.getRemoteUserTokenFeedback.bind(this,resolve,reject,remote.toLowerCase()),
+					getCreds: {username,password,scopes}}})
+		}else{
+
+			return reject(new Error('No supported remote token source'))
+		}
+
+		
+
 	})
  
 
 } 
+
+methods.getRemoteUserTokenFeedback = function(resolve,reject,vendor,err =null,result=null){
+	
+	const self = this 
+	
+	    console.log('THE CONFIG RESULT')
+	    console.log(result)
+
+		if(err){
+
+			// console.log('Configstore could not complete')
+			console.log('THE ERROR OCCURED')
+			console.log(err)
+			return reject(err)
+
+		 }else{
+	
+		
+					 console.log('REMOTE TOKEN RESULT')
+					 console.log(result)
+				
+					// let accessToken = result.accessToken 
+					// console.log(accessToken)
+
+					// let accessToken = {token: token,tokenID: id, userID: username}
+					
+					// self.storeUserConfigs({key:username,value:accessToken }) 
+					
+					self.emit({
+						type: 'store-in-config',
+						data: {
+							// callback: self.getRemoteUserTokenFeedback.bind(this,resolve,reject),
+							key: `${vendor}.${result.userID}`, value: result},
+							
+						}) 
+				
+
+					return resolve(result) 
+
+				
+				
+			
+		 }
+
+		 
+	
+	
+	
+	
+}
 
 
 methods.authenticateUser = function(token){
@@ -931,35 +1002,57 @@ methods.gitInit = function(initFolder,remoteUrl=null){
 
 	const self = this 
 	const git = self.simpleGit(initFolder) 
+	
 	// git.cwd(initFolder)
 	
-	if(remoteUrl){
-
-		 git.init()
-		.add('.')
-		.commit('Add initial commit to this repo')
-		.addRemote('origin',remoteUrl)
-		.push('origin', 'master')
-		.catch((e)=>{
-
-			console.log('GIT INIT ERROR')
-			console.log(e)
-		})
-
-	}else{
+	return new Promise((resolve,reject)=>{
 
 		git.init()
-		.add('./*')
-		.commit('Add initial commit to this repo') 
-		.catch((e)=>{
+		   .add('.')
+		   .commit('Add initial commit to this repo') 
+		   .then(()=>resolve(true))
+		   .catch((e)=>{
+   
+			   console.log('GIT INIT ERROR')
+			   console.log(e)
+			   reject(false)
+		   })
 
-			console.log('GIT INIT ERROR')
-			console.log(e)
-		})
+	// 	if(remoteUrl){
 
-	}
+	// 		git.init()
+	// 	   .add('.')
+	// 	   .commit('Add initial commit to this repo')
+	// 	   .addRemote('origin',remoteUrl)
+	// 	   .push('origin', 'master')
+	// 	   .then(()=>resolve(true))
+	// 	   .catch((e)=>{
+   
+	// 		   console.log('GIT INIT ERROR')
+	// 		   console.log(e)
+	// 		   reject(false)
+	// 	   })
+   
+	//    }else{
+   
+	// 	   git.init()
+	// 	   .add('.')
+	// 	   .commit('Add initial commit to this repo') 
+	// 	   .then(()=>resolve(true))
+	// 	   .catch((e)=>{
+   
+	// 		   console.log('GIT INIT ERROR')
+	// 		   console.log(e)
+	// 		   reject(false)
+	// 	   })
+   
+	//    }
+	   
+   
+
+
+	})
 	
-
 	
 
 } 
@@ -1094,6 +1187,28 @@ methods.runTasks = async function(toRun,dir){
 	
 	
 }
+
+methods.getMoData = async function(resolve,reject,result){
+	
+	const self = this 
+	
+	
+
+		if(!result){
+
+			return reject(new Error('There was an error collecting answers'))
+		 }else{
+	
+			return resolve(result)
+		 }
+
+		 
+	
+	
+	
+	
+}
+
 
 
 module.exports = methods

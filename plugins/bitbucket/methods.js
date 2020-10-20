@@ -92,3 +92,6 @@ methods.api = function(data){
 
 
 } 
+
+
+module.exports = methods

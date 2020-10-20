@@ -91,3 +91,5 @@ methods.token = function(data){
 
 
 } 
+
+module.exports = methods

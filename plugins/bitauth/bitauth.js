@@ -24,4 +24,4 @@ class Bitauth{
 
 }
 
-export default Bitauth
+module.exports = Bitauth

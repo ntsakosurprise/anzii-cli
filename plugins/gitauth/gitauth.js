@@ -14,7 +14,11 @@ class Gitauth{
    
    
      this.init = methods.init
-     this.handleGitAuth = methods.handleGitAuth
+     this.handleGitAuth = methods.handleGitAuth 
+     this.handleGetGitAuthToken = methods.handleGetGitAuthToken
+     this.authenticate = methods.authenticate
+     this.getToken = methods.getToken 
+     this.byUsername = methods.byToken
     
      
     
@@ -26,4 +30,4 @@ class Gitauth{
 
 }
 
-export default Gitauth
+module.exports = Gitauth

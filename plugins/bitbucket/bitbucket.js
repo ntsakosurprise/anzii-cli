@@ -19,4 +19,4 @@ class Bitbucket{
 
 }
 
-export default Bitbucket
+module.exports = Bitbucket

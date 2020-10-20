@@ -9,7 +9,8 @@ const pkgInstall  = require('pkg-install');
 const Configstore = require('configstore'); 
 const Octokit = require('@octokit/rest'); 
 const { createBasicAuth } = require("@octokit/auth-basic"); 
-var github = require('octonode');
+var github = require('octonode'); 
+// const Bitbucket = require('bitbucket').Bitbucket
 // const pkg = require('../package.json')
 // const conf = new Configstore(pkg.name);
 
@@ -24,7 +25,8 @@ class Scaffold{
 	 this.Octokit = Octokit
 	 this.simpleGit = simpleGit 
 	 this.Configstore = Configstore 
-	 this.github = github
+	 this.github = github 
+	//  this.Bitbucket = Bitbucket
     //  this.octokit = new Octokit() 
      this.createBasicAuth = createBasicAuth
      this.questions = {
@@ -41,7 +43,7 @@ class Scaffold{
 				type: 'list',
 				key: 'provider', 
 				message: 'Which remote provider do you use?', 
-				choices: ['Github','Bitbucket']
+				choices: ['Github']
 				
 			},
 			{ 
@@ -88,7 +90,7 @@ class Scaffold{
 				name: 'account', 
 				type: 'list',
 				key: 'account', 
-				message: 'Which account are u creating this repo for?', 
+				message: 'Which account are you creating this repo for?', 
 				choices: []
 				
 			},
@@ -194,7 +196,10 @@ class Scaffold{
 	 this.makeFolder = methods.makeFolder 
 	 this.gitInit = methods.gitInit 
 	 this.npmInit = methods.npmInit
-	 this.runTasks = methods.runTasks
+	 this.runTasks = methods.runTasks 
+	 this.getMoData = methods.getMoData 
+	 this.getStoredUserTokenFeedback = methods.getStoredUserTokenFeedback 
+	 this.getRemoteUserTokenFeedback = methods.getRemoteUserTokenFeedback 
 	 this.startPostAuthenticationTasks = methods.startPostAuthenticationTasks
 	
      

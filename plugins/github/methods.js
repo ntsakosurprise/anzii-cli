@@ -57,7 +57,7 @@ methods.byToken = function(data){
 
 } 
 
-exports.module = methods
+module.exports = methods
 
 
 
