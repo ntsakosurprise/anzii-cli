@@ -4,7 +4,7 @@ const methods = {}
 methods.init = function(){
   
   
-    console.log('Configstore has been initialised')
+    // console.log('Configstore has been initialised')
 	this.listens({
 		
 		'store-in-config': this.handleStoreInConfig.bind(this),
@@ -24,10 +24,10 @@ methods.handleStoreInConfig = function(data){
 	const {key,value} = data 
 	// self.callback = data.callback
 
-	console.log('THE KEY VALUE PAIRS')
-	console.log(data)
-	console.log(key)
-	console.log(value)
+	// console.log('THE KEY VALUE PAIRS')
+	// console.log(data)
+	// console.log(key)
+	// console.log(value)
 
 	const config = new self.Configstore(loadFile('./package.json').name) 
     config.set(key,value) 
@@ -41,8 +41,8 @@ methods.handleStoreInConfig = function(data){
 
 methods.handleGetFromConfig = function(data){
 
-	console.log('THE HANDgetfromconfig data')
-	console.log(data)
+	// console.log('THE HANDgetfromconfig data')
+	// console.log(data)
  
 	const self = this 
 	const pao = self.pao

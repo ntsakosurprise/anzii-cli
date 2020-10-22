@@ -33,6 +33,7 @@
     "execa": "^4.0.3",
     "figlet": "^1.5.0",
     "inquirer": "^7.3.3",
+    "is-online": "^8.5.1",
     "listr": "^0.14.3",
     "octonode": "^0.9.5",
     "pkg-install": "^1.0.0",

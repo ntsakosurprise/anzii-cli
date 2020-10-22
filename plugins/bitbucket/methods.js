@@ -4,7 +4,7 @@ const methods = {}
 methods.init = function(){
   
   
-    console.log('Bitbucket has been initialised')
+    // console.log('Bitbucket has been initialised')
 	this.listens({
 		
 		'bitbucket-take-action': this.handleBitbucketAction.bind(this),

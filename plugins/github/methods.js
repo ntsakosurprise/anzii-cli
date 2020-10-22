@@ -4,10 +4,10 @@ const methods = {}
 methods.init = function(){
   
   
-    console.log('Input has been initialised')
+    // console.log('Input has been initialised')
 	this.listens({
 		
-		'git-auth': this.handleGitAuth.bind(this),
+		'gitrrttt-auth': this.handleGitAuth.bind(this),
 	
 		
 	})

@@ -1,4 +1,5 @@
 
+
 const methods  = require("./methods")
 
 const execa = require('execa'); 
@@ -9,10 +10,23 @@ const pkgInstall  = require('pkg-install');
 const Configstore = require('configstore'); 
 const Octokit = require('@octokit/rest'); 
 const { createBasicAuth } = require("@octokit/auth-basic"); 
-var github = require('octonode'); 
+const github = require('octonode'); 
+const { projectInstall } = require('pkg-install'); 
+const isOnline = require('is-online');
+
+
 // const Bitbucket = require('bitbucket').Bitbucket
 // const pkg = require('../package.json')
 // const conf = new Configstore(pkg.name);
+
+/**
+ * The methods container file for Scaffold plugin. Methods files in anzii
+ * ecosystem's plugins are usually created to prevent clutter in the plugin's
+ * class file
+ * @class Scaffold
+ * @constructor 
+ 
+ */
 
 class Scaffold{
   
@@ -26,6 +40,8 @@ class Scaffold{
 	 this.simpleGit = simpleGit 
 	 this.Configstore = Configstore 
 	 this.github = github 
+	 this.projectInstall = projectInstall 
+	 this.isOnline = isOnline
 	//  this.Bitbucket = Bitbucket
     //  this.octokit = new Octokit() 
      this.createBasicAuth = createBasicAuth
@@ -137,7 +153,8 @@ class Scaffold{
 				if (value.length) { 
 					return true;
 				}else{ 
-					return 'Please enter your password.';
+					// return 'Please enter your password.'; 
+					return false
 				} 
 		
 			} 
@@ -195,11 +212,16 @@ class Scaffold{
 	 this.storeUserConfigs = methods.storeUserConfigs
 	 this.makeFolder = methods.makeFolder 
 	 this.gitInit = methods.gitInit 
-	 this.npmInit = methods.npmInit
+	 this.packagesInstall = methods.packagesInstall
 	 this.runTasks = methods.runTasks 
 	 this.getMoData = methods.getMoData 
 	 this.getStoredUserTokenFeedback = methods.getStoredUserTokenFeedback 
 	 this.getRemoteUserTokenFeedback = methods.getRemoteUserTokenFeedback 
+	 this.createProjectBase = methods.createProjectBase 
+	 this.buildTaskList = methods.buildTaskList 
+	 this.startProjectCreation = methods.startProjectCreation 
+	 this.isExistingDir = methods.isExistingDir 
+	 this.isInternetConnected = methods.isInternetConnected
 	 this.startPostAuthenticationTasks = methods.startPostAuthenticationTasks
 	
      

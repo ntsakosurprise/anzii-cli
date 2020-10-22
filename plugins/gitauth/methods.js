@@ -5,7 +5,7 @@ const methods = {}
 methods.init = function(){
   
   
-    console.log('Gitauth has been initialised')
+    // console.log('Gitauth has been initialised')
 	this.listens({
 		
 		'git-auth': this.handleGitAuth.bind(this),
@@ -34,8 +34,8 @@ methods.handleGetGitAuthToken = function(data){
 	const self = this 
 	const {callback} = data 
 
-	console.log('THE HANDLEGETGITAUTHTOKEN')
-	console.log(data)
+	// console.log('THE HANDLEGETGITAUTHTOKEN')
+	// console.log(data)
 
 	self.getToken(data)
 	.then((token)=>{
@@ -82,13 +82,13 @@ methods.getToken = function(data){
 				  // console.log('THE AUTHENTICATION SCOPES')
 				  if(err){
   
-					  console.log('Git hub login error')
+					//   console.log('Git hub login error')
 					  reject(err)
   
 				  }else{
 					  
-					  console.log(token)
-					  console.log(id)
+					//   console.log(token)
+					//   console.log(id)
 					  let accessToken = {token: token,tokenID: id, userID: username}
 					  
 					//   self.storeUserConfigs({key:username,value:accessToken }) 
