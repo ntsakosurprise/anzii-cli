@@ -5,7 +5,7 @@
 
 Anzii-cli is a command line tool for Anzii backend framework. 
 
-It is used to automate tasks that are typically taken when building applications with Anziijs.
+It is used to automate tasks that are typically taken when building applications with [Anziijs](https://www.npmjs.com/package/anzii).
 
 
 # Installation 
