@@ -10,16 +10,16 @@ const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 // const NodemonPlugin = require('nodemon-webpack-plugin') 
 const root = path.resolve(__dirname)
 
-console.log('THE ROOT IN WEBPACK')
-console.log(root)
+// console.log('THE ROOT IN WEBPACK')
+// console.log(root)
 
 
 
 
-var anzii = {
+var anziiCli = {
 
   
-  entry: ["@babel/polyfill",'./lib/start'],
+  entry: ["@babel/polyfill",'./plugins/index'],
   target: 'node',
   externals: [
     { express: 'commonjs express' },
@@ -51,19 +51,7 @@ nodeExternals({
     new webpack.DefinePlugin({
       __isBrowser__: "false"
     }),
-    new FileManagerPlugin({
-      onEnd: {
-          copy: [
-              { source:  path.resolve(__dirname, 'dist','index.js'), destination: path.resolve(__dirname, 'lib','index.js') },
-              // { source:  path.resolve(__dirname, 'dist','index.js.map'), destination: path.resolve(__dirname, 'lib','index.js.map') }
-              // { source: '/path/**/*.js', destination: '/path' },
-              // { source: '/path/fromfile.txt', destination: '/path/tofile.txt' },
-              // { source: '/path/**/*.{html,js}', destination: '/path/to' },
-              // { source: '/path/{file1,file2}.js', destination: '/path/to' },
-              // { source: '/path/file-[hash].js', destination: '/path/to' }
-          ]
-        }
-      })
+    
   ],
   resolve: {
     roots: [root]
@@ -162,4 +150,4 @@ nodeExternals({
 
 
 
-module.exports = [anzii]
+module.exports = [anziiCli]

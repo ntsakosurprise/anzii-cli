@@ -1,5 +1,6 @@
 
 includes
+plugins
 lib
 config
 logs 
@@ -10,5 +11,3 @@ webpack.config.js
 .eslintrc.json 
 .editorConfig 
 .gitignore 
-app.js 
-hello.js

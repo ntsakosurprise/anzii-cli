@@ -29,7 +29,7 @@ It is used to automate tasks that are typically taken when building applications
 
  Anzii-cli currently supports two main templates, these templates are configured for cli and web applications. The structure of the `web` template is configured to be suitable for **api, backend, and web apps**
 
-### Options 
+#### Options 
 
 --cli
 

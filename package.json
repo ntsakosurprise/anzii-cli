@@ -17,9 +17,25 @@
     "postinstall": "patch-package",
     "prepublishOnly": "npm run build"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": ["cli","anzii-cli","scaffold"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ntsakosurprise/anzii-cli"
+  },
+  "author": {
+    "email": "mashelesepru@gmail.com",
+    "name": "Surprise Ntsako Mashele",
+    "url": "https://www.twitter.com/ntsakosurprise"
+  },
+  "contributors": [
+    {
+      "name": "Surprise Mashele",
+      "email": "mashelesepru@gmail.com"
+      
+    }
+  ],
+  "homepage": "https://github.com/ntsakosurprise/anzi-clii#readme",
+  "license": "MIT",
   "dependencies": {
     "@octokit/auth-basic": "^1.4.6",
     "@octokit/rest": "^18.0.6",
@@ -62,5 +78,19 @@
     "webpack": "^4.44.2",
     "webpack-cli": "^3.3.12",
     "webpack-node-externals": "^2.5.2"
+  },
+  "readme": "See README file",
+  "readmeFilename": "README.md",
+  "files": [
+    "dist/",
+    "templates/",
+    "app.js",
+    "README.md",
+    "CONTRIBUTING.md",
+    "LICENSE",
+    "package.json"
+  ],
+  "bugs": {
+    "url": "https://github.com/ntsakosurprise/anzii-cli/issues"
   }
 }
